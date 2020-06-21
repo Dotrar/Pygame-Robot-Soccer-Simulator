@@ -1,0 +1,31 @@
+{
+    #some gameplay stats
+    'ball_size'  : 30,
+    'ball_pos'   : (-15,-15),
+    'ball_decay' : 0.01,
+    'obst_size'  : 50,
+    'field_size' : (1200,800),
+    'goal_size'  : 200,
+    'world': None,
+    
+    #internal screen size
+    'screen_size': size,
+    
+    #console details:
+    'console_rect': (10,10,800,400),
+    'console_font': ('consolas',16),
+    'console': None,
+    
+    #robot details
+    'robot_pos' : (width/2,height/2),
+    'robot_rot' : 180,
+    'robot_size': 50,
+    'robot_AI': NASR({
+    	'sensor_range': 600,
+        }),
+    'robot' : None,
+    
+    #camera system mockup
+    'camera_fov' : 60,
+    'camera_max' : 600,#max range
+    }
