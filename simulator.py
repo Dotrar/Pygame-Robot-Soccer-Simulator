@@ -1,14 +1,10 @@
-from NASR_AI import NASR  # AI code
-from navsim.helpers import *
-from navsim.robot import Robot
-from navsim.world import World
-from navsim.console import Console
-import sys
+'''
+Main File
+'''
 import pygame
-import random
-import math
-import ast
-import os
+
+from navsim import ConfigurationManager
+from navsim.objects import Console
 
 pygame.init()
 pygame.font.init()
@@ -16,55 +12,14 @@ pygame.font.init()
 size = width, height = 1600, 900
 screen = pygame.display.set_mode(size, pygame.DOUBLEBUF, 32)
 
-#self made modules
-#ai
+config = ConfigurationManager(None)
 
-configuration = None
-files = [f for f in os.listdir('.') if os.path.isfile(f)]
-print(files)
-with open('./cfg.txt', 'r') as f:
-    c = f.read()
-    configuration = eval(c)  # oh on
-print(configuration)
-
-#configuration = {
-#some gameplay stats
-#'ball_size'  : cm(3),
-#'ball_pos'   : (-15,-15),
-#'ball_decay' : 0.01,
-#'obst_size'  : cm(5),
-#'field_size' : (cm(120),cm(80)),
-#'goal_size'  : cm(20),
-#'world': None,
-
-#internal screen size
-#'screen_size': size,
-
-##console details:
-#'console_rect': (10,10,800,400),
-#'console_font': ('consolas',16),
-#'console': None,
-
-#robot details
-#'robot_pos' : (width/2,height/2),
-#'robot_rot' : 180,
-#'rgobot_size': cm(5),
-#'robot_AI': NASR({
-#'sensor_range': 600,
-#}),
-#'robot' : None,
-
-#camera system mockup
-#'camera_fov' : 60,
-#'camera_max' : 600,#max range
-#}
-
-#console is always created first
-console = Console(configuration)
+#TODO bring into navsim.system
+console = Console(config)
 
 world = World(configuration)
 
-#camera is always created last, which is in robot
+# camera is always created last, which is in robot
 robot = Robot(configuration)
 
 gen_rand = False
@@ -80,15 +35,15 @@ keys:
    rclik - place robot (hold for rotate)
    space - remove obstructions
    r[#] - r then number - generate obst
-   
+
    s - stop/start AI module
    c - clear internal map (use after remove obstructions)
-   
+
    tab - show/hide console
    {a,v,d} - show/hide AI, VFH, Debug lines.
-   
+
    backspace - start entire simulation over
-   
+
    h - print this help
 """
 
@@ -159,7 +114,7 @@ while 1:
                 world.generate_obst(event.key-48)
 
             elif event.key == pygame.K_BACKSPACE:
-                #huge reset
+                # huge reset
                 configuration['robot_AI'] = NASR({
                     'sensor_range': 600,
                 })
@@ -167,7 +122,7 @@ while 1:
 
                 world = World(configuration)
 
-                #camera is always created last, which is in robot
+                # camera is always created last, which is in robot
                 robot = Robot(configuration)
 
                 gen_rand = False

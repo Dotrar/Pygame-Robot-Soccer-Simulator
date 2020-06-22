@@ -5,7 +5,7 @@ import numpy as np
 from math import *
 import re
 
-from navsim.helpers import *
+from nasr.helpers import *
 
 #use generator next time
 from enum import Enum

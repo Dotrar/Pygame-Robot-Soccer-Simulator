@@ -1,0 +1,24 @@
+{
+  "size": {
+    "robot": 50,
+    "obstacle": 50,
+    "ball": 30,
+    "goal": 200,
+    "field": "1200x800"
+  },
+  "screen": {
+    "resolution": "1920x1080"
+  },
+  "console": {
+    "position": "10, 10",
+    "size": "800, 400",
+    "font": "consolas 16"
+  },
+  "camera": {
+    "fov": 60,
+    "range": 500
+  },
+  "ai": {
+    "module": "nasr"
+  }
+}
