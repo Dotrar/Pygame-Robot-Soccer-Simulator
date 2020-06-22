@@ -4,6 +4,7 @@ Navsim module
 '''
 
 import json
+import logging
 from typing import Optional, Union, Dict, NewType, Any
 
 ConfigValue = Union[str, int, bool]
@@ -13,6 +14,7 @@ ConfigStore = Dict[str, Union[ConfigValue, dict]]
 class ConfigurationManager:
     ''' Used to load and store configuration values on inital load '''
     _db: ConfigStore = {}
+    log = logging.getLogger(__name__)
 
     def __init__(self, file: Optional[str]):
         self.load(file)
@@ -36,3 +38,11 @@ class ConfigurationManager:
                 break
 
         return idx
+
+
+class NavSim:
+    ''' Main NavSim object, based on pygame
+    '''
+
+    def __init__(self):
+        pass

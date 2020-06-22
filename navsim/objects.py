@@ -1,16 +1,15 @@
 ''' Objects module with simulation elements
 '''
-from .field import Field
-from .ball import Ball
-import random
-import pygame  # type:ignore
 from typing import List, cast
+import logging
+import pygame  # type:ignore
 
 from . import ConfigurationManager
 
 
 class Console(object):
     ''' console object for writing text on the screen'''
+    log = logging.getLogger(__name__)
 
     def __init__(self, config: ConfigurationManager, show=True):
         self.bg_col = pygame.Color(
@@ -73,23 +72,77 @@ class Console(object):
         self.lines.append(string)
         return len(self.lines)
 
-#random code for simulator
+
+class Ball:
+    ''' Ball object, has velocity and deacceleration '''
+    def __init__(self, config, pos=None):
+        self.size = config.get('ball.size', 30)
+        self.decay = config['ball_decay']
+        self.x = pos[0] if pos is not None else config['ball_pos'][0]
+        self.y = pos[1] if pos is not None else config['ball_pos'][1]
+        self.pos = (self.x, self.y)
+        self.dx = 0
+        self.dy = 0
+        pass
+
+    def draw(self, surface):
+        p = (int(self.x), int(self.y))
+        pygame.draw.circle(surface, pygame.Color('yellow'), p, self.size)
+        pygame.draw.circle(surface, pygame.Color('orange'), p, 5)
+
+    def update(self, dt):
+        self.x += self.dx * dt
+        self.y += self.dy * dt
+        self.pos = (self.x, self.y)
+        self.dx /= (1 + self.decay)
+        self.dy /= (1 + self.decay)
+        pass
 
 
-def randtuple(rect):
-    return (random.randint(rect[0], rect[0]+rect[2]),
-            random.randint(rect[1], rect[1]+rect[3]))
+class Field:
+    def __init__(self, config):
+
+        self.size = s = config['field_size']
+        self.goal_size = g = config['goal_size'] if 'goal_size' in config else 40
+        scr = config['screen_size']
+
+        self.rect = pygame.Rect((0, 0), s)
+        self.rect.center = (scr[0]/2, scr[1]/2)
+
+        self.goal = pygame.Rect(0, 0, 20, g)
+
+        self.goal.center = self.rect.midleft
+
+    def update(self):
+        pass
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, pygame.Color('black'), self.rect, 2)
+        pygame.draw.rect(surface, pygame.Color('blue'), self.goal)
+
+    def contains_point(self, pos):
+        return self.rect.collidepoint(pos)
+
+    def top(self):
+        return self.rect[1]
+
+    def bottom(self):
+        return self.rect[1]+self.rect[3]
+
+    def left(self):
+        return self.rect[0]
+
+    def right(self):
+        return self.rect[0] + self.rect[2]
 
 
-class World(object):
+class World:
+    log = logging.getLogger(__name__)
+
     def __init__(self, config, n=0):
+
         self.obstacle_size = config.get('obstacle.size', 50)
         self.obstacle_list = []
-        #self.field = Field(config)
-        #self.ball = Ball(config)
-        self.scored = True
-
-        self.console.write("World created!")
         if n is not 0:
             generate_obst(n)
             self.console.write("Made {0} objects".format(n))
