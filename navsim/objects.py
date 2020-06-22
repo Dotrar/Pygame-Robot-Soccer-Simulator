@@ -1,10 +1,12 @@
 ''' Objects module with simulation elements
 '''
-from typing import List, cast
+from typing import List, cast, Tuple, Optional
+from collections import namedtuple
 import logging
 import pygame  # type:ignore
 
 from . import ConfigurationManager
+from .utils import Point, Rect, random_position
 
 
 class Console(object):
@@ -75,130 +77,140 @@ class Console(object):
 
 class Ball:
     ''' Ball object, has velocity and deacceleration '''
-    def __init__(self, config, pos=None):
-        self.size = config.get('ball.size', 30)
-        self.decay = config['ball_decay']
-        self.x = pos[0] if pos is not None else config['ball_pos'][0]
-        self.y = pos[1] if pos is not None else config['ball_pos'][1]
-        self.pos = (self.x, self.y)
-        self.dx = 0
-        self.dy = 0
-        pass
+
+    def __init__(self, config: ConfigurationManager, pos: Point):
+        self.size: int = config.get('ball.size', 30)
+        self.decay: int = config.get('ball.decay', 30)
+        self.pos = pos
+        self.vel = Point(0, 0)
 
     def draw(self, surface):
-        p = (int(self.x), int(self.y))
-        pygame.draw.circle(surface, pygame.Color('yellow'), p, self.size)
-        pygame.draw.circle(surface, pygame.Color('orange'), p, 5)
+        ''' Renders ball object onto the surface'''
+        pygame.draw.circle(
+            surface,
+            pygame.Color('yellow'),
+            self.pos,
+            self.size
+        )
 
-    def update(self, dt):
-        self.x += self.dx * dt
-        self.y += self.dy * dt
-        self.pos = (self.x, self.y)
-        self.dx /= (1 + self.decay)
-        self.dy /= (1 + self.decay)
-        pass
+        pygame.draw.circle(
+            surface,
+            pygame.Color('orange'),
+            self.pos,
+            10
+        )
+
+    def update(self, dt: int):
+        self.pos.x += self.vel.x * dt
+        self.pos.y += self.vel.y * dt
+        self.vel.x /= (1 + self.decay)
+        self.vel.y /= (1 + self.decay)
 
 
 class Field:
+    ''' Field Class is the soccer field, specifies the boundaries and the goals
+    '''
+
     def __init__(self, config):
 
-        self.size = s = config['field_size']
-        self.goal_size = g = config['goal_size'] if 'goal_size' in config else 40
-        scr = config['screen_size']
+        self.size = config.get('field.size', '1200x800').split('x')
+        self.goal_size = config.get('field.goalsize', 200)
 
-        self.rect = pygame.Rect((0, 0), s)
-        self.rect.center = (scr[0]/2, scr[1]/2)
-
-        self.goal = pygame.Rect(0, 0, 20, g)
+        self.rect = pygame.Rect((0, 0), self.size)
+        self.rect.center = config.get('field.position', '600,400').split(',')
+        self.goal = pygame.Rect(0, 0, 20, self.goal_size)
 
         self.goal.center = self.rect.midleft
 
     def update(self):
+        ''' update function for the field '''
         pass
 
     def draw(self, surface):
+        ''' drawing the field'''
         pygame.draw.rect(surface, pygame.Color('black'), self.rect, 2)
         pygame.draw.rect(surface, pygame.Color('blue'), self.goal)
 
-    def contains_point(self, pos):
+    def contains_point(self, pos: Point) -> bool:
+        ''' if point is in the field '''
         return self.rect.collidepoint(pos)
-
-    def top(self):
-        return self.rect[1]
-
-    def bottom(self):
-        return self.rect[1]+self.rect[3]
-
-    def left(self):
-        return self.rect[0]
-
-    def right(self):
-        return self.rect[0] + self.rect[2]
 
 
 class World:
-    log = logging.getLogger(__name__)
-
-    def __init__(self, config, n=0):
+    def __init__(self, config: ConfigurationManager, n=0):
 
         self.obstacle_size = config.get('obstacle.size', 50)
         self.obstacle_list = []
-        if n is not 0:
-            generate_obst(n)
-            self.console.write("Made {0} objects".format(n))
+        self.ball: Optional[Ball] = None
+        self.configuration_manager = config
+        self.field = Field(config)  # TODO componentise
+        if n > 0:
+            self.generate_obstacles(n)
 
-        self.console.write("Field: {0}".format(self.field.rect.size))
-        self.console.write("Screen: {0}".format(config['screen_size']))
-        config['world'] = self
-        pass
+    def generate_obstacles(self, number: int):
+        ''' Generates a given number of obstacles, scattered around the world '''
+        for _ in range(number):
+            self.obstacle_list.append(random_position(self.field.rect))
 
-    def generate_obst(self, number):
-        for i in range(number):
-            self.obst_list.append(randtuple(self.field.rect))
-
-    def place_obst(self, pos):
+    def place_obstacles(self, pos: Point):
+        ''' places an obstacle in the given location'''
         if self.field.contains_point(pos):
-            self.obst_list.append(pos)
+            self.obstacle_list.append(pos)
 
-    def clear_obst(self):
-        self.obst_list = []
+    def clear_obstacles(self):
+        ''' removes all obstacles from the map'''
+        self.obstacle_list = []
 
-    def place_ball(self, pos):
-        self.ball = Ball(self.configuration, pos)
+    def place_ball(self, pos: Point):
+        ''' places the ball on the map '''
+        if self.field.contains_point(pos):
+            self.ball = Ball(self.configuration_manager, pos)
 
     def clear_ball(self):
+        ''' removes the ball from the map'''
         self.ball = None
 
-    def update(self, dt):
-        if self.ball is not None:
-            self.ball.update(dt)
+    def score(self):
+        '''called when player has hit a goal'''
+        print('score!')
 
-            x, y, r = self.ball.x, self.ball.y, self.ball.size
+    def update(self, dt: float):
+        ''' update, causes bouncing'''
+        if not self.ball:
+            return
 
-            if x+r > self.field.right():
-                self.ball.dx = -abs(self.ball.dx)
-            elif x-r < self.field.left():
-                #GOAL condition
-                if y > self.field.goal.top and (y <
-                                                self.field.goal.bottom):
-                    self.scored = True
-                self.ball.dx = abs(self.ball.dx)
-            if y+r > self.field.bottom():
-                self.ball.dy = -abs(self.ball.dy)
-            elif y-r < self.field.top():
-                self.ball.dy = abs(self.ball.dy)
+        self.ball.update(dt)
+
+        if self.ball.pos.x + self.ball.size > self.field.rect.right:
+            self.ball.vel.x *= -1
+        elif self.ball.pos.x - self.ball.size < self.field.rect.left:
+
+            if y > self.field.goal.top and y < self.field.goal.bottom:
+                self.score()
+            else:
+                self.ball.vel.x *= -1
+
+        if self.ball.pos.y + self.ball.size > self.field.rect.bottom:
+            self.ball.vel.y *= -1
+        elif self.ball.pos.y - self.ball.size < self.field.rect.top:
+            self.ball.vel.y *= -1
 
     def draw(self, surface):
-
-        #draw field
+        '''rendering function for world '''
         self.field.draw(surface)
 
-        #each obstacle
-        for each in self.obst_list:
-            pygame.draw.circle(surface, pygame.Color(
-                'black'), each, self.obst_size)
-            pygame.draw.circle(surface, pygame.Color('white'), each, 5)
-
-        #draw ball
-        if self.ball is not None:
+        for obst in self.obstacle_list:
+            pygame.draw.circle(
+                surface,
+                pygame.Color('black'),
+                obst,
+                self.obstacle_size
+            )
+            pygame.draw.circle(
+                surface,
+                pygame.Color('white'),
+                obst,
+                5
+            )
+        if self.ball:
             self.ball.draw(surface)

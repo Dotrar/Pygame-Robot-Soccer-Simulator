@@ -2,13 +2,20 @@
 '''
 
 from typing import Tuple
+from dataclasses import dataclass
 import random
 
-Rect = Tuple[int, int, int, int]
-Position = Tuple[int, int]
+from pygame import Rect
 
 
-def random_position(rect: Rect) -> Position:
+@dataclass
+class Point:
+    'Generic 2D vector'
+    x: int
+    y: int
+
+
+def random_position(rect: Rect) -> Point:
     ''' returns tuple of random position bounded by rect '''
-    return (random.randint(rect[0], rect[0]+rect[2]),
-            random.randint(rect[1], rect[1]+rect[3]))
+    return (random.randint(rect.left, rect.right),
+            random.randint(rect.top, rect.bottom))
