@@ -1,12 +1,12 @@
 ''' Objects module with simulation elements
 '''
-from typing import List, cast, Tuple, Optional
-from collections import namedtuple
 import logging
-import pygame  # type:ignore
+from typing import List, Optional, Tuple, cast
+
+import pygame
 
 from . import ConfigurationManager
-from .utils import Point, Rect, random_position
+from .utils import Point, Rect, random_position, Obstacle
 
 
 class Console(object):
@@ -79,8 +79,8 @@ class Ball:
     ''' Ball object, has velocity and deacceleration '''
 
     def __init__(self, config: ConfigurationManager, pos: Point):
-        self.size: int = config.get('ball.size', 30)
-        self.decay: int = config.get('ball.decay', 30)
+        self.size = cast(int, config.get('ball.size', 30))
+        self.decay = cast(int, config.get('ball.decay', 30))
         self.pos = pos
         self.vel = Point(0, 0)
 
@@ -140,7 +140,7 @@ class World:
     def __init__(self, config: ConfigurationManager, n=0):
 
         self.obstacle_size = config.get('obstacle.size', 50)
-        self.obstacle_list = []
+        self.obstacle_list: List[Point] = []
         self.ball: Optional[Ball] = None
         self.configuration_manager = config
         self.field = Field(config)  # TODO componentise
@@ -175,12 +175,12 @@ class World:
         '''called when player has hit a goal'''
         print('score!')
 
-    def update(self, dt: float):
+    def update(self):
         ''' update, causes bouncing'''
         if not self.ball:
             return
 
-        self.ball.update(dt)
+        self.ball.update()
 
         if self.ball.pos.x + self.ball.size > self.field.rect.right:
             self.ball.vel.x *= -1

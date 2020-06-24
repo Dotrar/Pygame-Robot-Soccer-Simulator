@@ -7,7 +7,7 @@ import random
 import math
 import numpy as np
 
-from pygame import Rect
+from pygame import Rect # type: ignore
 
 
 @dataclass
@@ -16,6 +16,10 @@ class Point:
     x: int
     y: int
 
+@dataclass
+class Obstacle:
+    pos: Point
+    size: int
 
 @dataclass
 class Bearing:
@@ -26,7 +30,7 @@ class Bearing:
 
 def random_position(rect: Rect) -> Point:
     ''' returns tuple of random position bounded by rect '''
-    return (random.randint(rect.left, rect.right),
+    return Point(random.randint(rect.left, rect.right),
             random.randint(rect.top, rect.bottom))
 
 def wrap180(angle: int) -> int:
