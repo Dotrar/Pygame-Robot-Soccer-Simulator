@@ -1,56 +1,62 @@
 '''
 Main File
 '''
-import pygame
+from ai.nasr import Nasr
+import pygame  # type: ignore
+from typing import Any
 
 from navsim import ConfigurationManager
-from navsim.objects import Console
+from navsim.objects import Console, World
+from navsim.robots import Robot
+
+''' Some different ai options '''
+# from ai.ekf import ekf
+
+'''---------------------------'''
 
 pygame.init()
 pygame.font.init()
-
 size = width, height = 1600, 900
 screen = pygame.display.set_mode(size, pygame.DOUBLEBUF, 32)
 
 config = ConfigurationManager(None)
-
-#TODO bring into navsim.system
 console = Console(config)
+world = World(config)
+robot = Robot(config)
 
-world = World(configuration)
+ai = Nasr()
 
-# camera is always created last, which is in robot
-robot = Robot(configuration)
+# any further here
+
+robot.attach_AI(ai)
+
 
 gen_rand = False
 placed = False
 ang = 0
 
-console.write(
-    'NASR - Not a Soccer Robot. AI design by D.West n9142461 - dre.west@connect{...}')
-h = """
-keys:
-   g - place ball
-   click - place obstruction
-   rclik - place robot (hold for rotate)
-   space - remove obstructions
-   r[#] - r then number - generate obst
 
-   s - stop/start AI module
-   c - clear internal map (use after remove obstructions)
+header = '''NavSim - Navigation Simulator
+    Written by D.West (WSU, QUT)
+    dre.west@outlook.com
+    --------------------
+    help:
+    .   g       :place ball
+    .   click   :place obstruction
+    .   r-click :place robot (hold=rotate)
+    .   [space] :play/stop
+    .   [tab]   :show/hide console
+    .   [1,2,3] :debug showing
+    .   [bksp]  :reset simulation
+    .   h       :print this header
+    '''
 
-   tab - show/hide console
-   {a,v,d} - show/hide AI, VFH, Debug lines.
+console.write(header)
 
-   backspace - start entire simulation over
 
-   h - print this help
-"""
+def check_key(event: Any, key: int) -> bool:
+    return (event.type == pygame.KEYUP and event.key == key)
 
-for line in h.split('\n'):
-    console.write(line)
-
-# ################################################# Main loop
 
 while 1:
     for event in pygame.event.get():

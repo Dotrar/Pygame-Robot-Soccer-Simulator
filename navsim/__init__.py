@@ -13,6 +13,7 @@ ConfigStore = Dict[str, Union[ConfigValue, dict]]
 
 class ConfigurationManager:
     ''' Used to load and store configuration values on inital load '''
+    #TODO bring into navsim.system
     _db: ConfigStore = {}
     log = logging.getLogger(__name__)
 
@@ -39,10 +40,3 @@ class ConfigurationManager:
 
         return idx
 
-
-class NavSim:
-    ''' Main NavSim object, based on pygame
-    '''
-
-    def __init__(self):
-        pass

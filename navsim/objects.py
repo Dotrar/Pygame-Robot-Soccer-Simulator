@@ -71,7 +71,7 @@ class Console(object):
 
     def write(self, string: str) -> int:
         ''' add a line to the console '''
-        self.lines.append(string)
+        self.lines += [x.strip() for x in string.splitlines()]
         return len(self.lines)
 
 
@@ -100,9 +100,9 @@ class Ball:
             10
         )
 
-    def update(self, dt: int):
-        self.pos.x += self.vel.x * dt
-        self.pos.y += self.vel.y * dt
+    def update(self):
+        self.pos.x += self.vel.x 
+        self.pos.y += self.vel.y 
         self.vel.x /= (1 + self.decay)
         self.vel.y /= (1 + self.decay)
 
@@ -144,6 +144,7 @@ class World:
         self.ball: Optional[Ball] = None
         self.configuration_manager = config
         self.field = Field(config)  # TODO componentise
+
         if n > 0:
             self.generate_obstacles(n)
 
@@ -185,7 +186,7 @@ class World:
             self.ball.vel.x *= -1
         elif self.ball.pos.x - self.ball.size < self.field.rect.left:
 
-            if y > self.field.goal.top and y < self.field.goal.bottom:
+            if self.ball.pos.y > self.field.goal.top and self.ball.pos.y < self.field.goal.bottom:
                 self.score()
             else:
                 self.ball.vel.x *= -1
