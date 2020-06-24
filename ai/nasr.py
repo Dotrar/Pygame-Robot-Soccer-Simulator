@@ -91,19 +91,19 @@ class Nasr:
             #=====================================================================
 
         def survey(self):
-        ''' find all that is around'''
+            ''' find all that is around'''
 
         def search(self):
-        ''' find ball and goal'''
+            ''' find ball and goal'''
 
         def acquire(self):
-        ''' move towards ball to pick up'''
+            ''' move towards ball to pick up'''
 
         def dribble(self):
-        ''' hold ball and move towards goal '''
+            ''' hold ball and move towards goal '''
 
         def kick(self):
-        ''' kick ball into goal '''
+            ''' kick ball into goal '''
 
         def stop(self):
-        ''' stop '''
+            ''' stop '''
